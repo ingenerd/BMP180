@@ -100,7 +100,8 @@ class BMP180:
 
     def _load_calibration(self):
         result = bytearray(22)
-        self._i2c.write_then_readinto(bytes([BMP180_CAL]), result)
+        with self._i2c as i2c:
+             i2c.write_then_readinto(bytes([BMP180_CAL]), result)
 
         self.cal_AC1 = (result[ 0]<<8) | result[ 1]   # INT16
         self.cal_AC2 = (result[ 2]<<8) | result[ 3]   # INT16
@@ -128,11 +129,13 @@ class BMP180:
     def read_raw_temp(self):
         """Reads the raw (uncompensated) temperature from the sensor."""
         result = bytearray(2)
-        self._i2c.write(
-            bytes([BMP180_CONTROL, BMP180_READTEMPCMD, BMP180_TEMPDATA])
-            )
-        time.sleep(0.005)
-        self._i2c.readinto(result)
+        with self._i2c as i2c:
+            i2c.write(
+                bytes([BMP180_CONTROL, BMP180_READTEMPCMD, BMP180_TEMPDATA])
+                )
+            time.sleep(0.005)
+            i2c.readinto(result)
+
         raw=((result[0]<<8) | result[1])
         return raw
 
@@ -140,19 +143,21 @@ class BMP180:
     def read_raw_pressure(self):
         """Reads the raw (uncompensated) pressure level from the sensor."""
         result = bytearray(3)
-        self._i2c.write(
-            bytes([BMP180_CONTROL, BMP180_READPRESSURECMD + (self._mode << 6),
-            BMP180_PRESSUREDATA])
-            )
-        if self._mode == BMP180_ULTRALOWPOWER:
-            time.sleep(0.005)
-        elif self._mode == BMP180_HIGHRES:
-            time.sleep(0.014)
-        elif self._mode == BMP180_ULTRAHIGHRES:
-            time.sleep(0.026)
-        else:
-            time.sleep(0.008)
-        self._i2c.readinto(result)
+        with self._i2c as i2c:
+            i2c.write(
+                bytes([BMP180_CONTROL, BMP180_READPRESSURECMD + (self._mode << 6),
+                BMP180_PRESSUREDATA])
+                )
+            if self._mode == BMP180_ULTRALOWPOWER:
+                time.sleep(0.005)
+            elif self._mode == BMP180_HIGHRES:
+                time.sleep(0.014)
+            elif self._mode == BMP180_ULTRAHIGHRES:
+                time.sleep(0.026)
+            else:
+                time.sleep(0.008)
+            i2c.readinto(result)
+
         msb  = result[0]
         lsb  = result[1]
         xlsb = result[2]
