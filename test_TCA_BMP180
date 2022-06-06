@@ -1,0 +1,25 @@
+# When using a TCA9548a multiplexer and connecting three BMP180 sensors to the
+# channels 2, 6 and 7, this code might help to get going.
+
+import BMP180
+import time
+import board
+import busio
+import adafruit_tca9548a
+from contextlib import suppress
+
+RPI_i2c = busio.I2C(board.SCL, board.SDA)
+multiplexer = adafruit_tca9548a.TCA9548A(RPI_i2c,address=0x70)
+
+
+sens2 = BMP180.BMP180(i2c=multiplexer[2])
+sens6 = BMP180.BMP180(i2c=multiplexer[6])
+sens7 = BMP180.BMP180(i2c=multiplexer[7])
+
+print('Temp2 = {0:0.2f} *C'.format(sens2.Temp()))
+print('Temp6 = {0:0.2f} *C'.format(sens6.Temp()))
+print('Temp7 = {0:0.2f} *C'.format(sens7.Temp()))
+
+print('Druck2 = {0:0.2f} Pa'.format(sens2.Press()))
+print('Druck6 = {0:0.2f} Pa'.format(sens6.Press()))
+print('Druck7 = {0:0.2f} Pa'.format(sens7.Press()))
